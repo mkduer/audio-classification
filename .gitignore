@@ -84,8 +84,8 @@ celerybeat-schedule
 # Environments
 .env
 .venv
+.idea
 env/
-venv/
 ENV/
 env.bak/
 venv.bak/
@@ -102,3 +102,7 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# large wavfiles for audio samples
+numbers1/
+numbers2/
