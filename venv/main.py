@@ -152,27 +152,16 @@ def visualization(count, training_size, training_accuracy, training_cost, test_s
     if CFG.PLOT_COST:
         graph.plot_cost(training_cost.ravel(), test_cost.ravel())
 
-
 def load_data() -> ((), ()):
     """
     Loads images of from defined dataset
     :return: lists of training data and testing data
     """
+
+
     (train_data, train_labels), (test_data, test_labels) = mnist.load_data()
 
 
-
-    # visualize sample of data
-    # src: http://home.mit.bme.hu/~hadhazi/Oktatas/NN18/dem3/html_demo/CIFAR-10Demo.html
-    if CFG.SHOW_SAMPLE_IMAGES:
-
-        f, axarr = plt.subplots(1, 5)
-        f.set_size_inches(16, 6)
-
-        for i in range(5):
-            img = train_data[i]
-            axarr[i].imshow(img)
-        plt.show()
 
 
     train_data = train_data.astype('float32') / 255

@@ -14,7 +14,7 @@ else:
     SPLIT = 10000  # validation data size
 
 # Network Layer Sizes
-OUTPUT_SIZE = 10
+OUTPUT_SIZE = 13
 DROPOUT = False
 DROP_VAL = 0.3
 
@@ -28,13 +28,12 @@ AUGMENT_IMAGES = False   # If True, augments images, if False, uses original ima
 VALIDATE = False  # If True, create validation data, if False, no validation data is used
 BATCH_SIZE = 32
 ACTIVATE_FN = ["relu", "relu", "relu", "relu", "softmax"]
-SHOW_SAMPLE_IMAGES = False
 
 # Image Specs
-ROW = 28
-COL = 28
+ROW = 32
+COL = 32
 DEPTH = 1
-TOTAL_LABELS = 10
+TOTAL_LABELS = 13
 
 # Graph Specs
 ANNOTATE = False  # if True, annotate accuracies, if False, don't annotate
