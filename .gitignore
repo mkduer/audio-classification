@@ -109,3 +109,5 @@ venv.bak/
 # large wavfiles for audio samples
 numbers1/
 numbers2/
+accuracy_graphs/
+reduced_images/
