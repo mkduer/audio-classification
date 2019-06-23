@@ -1,50 +1,44 @@
 import numpy as np                    # linear algebra, vector operations, numpy arrays
 import matplotlib.pyplot as plt       # allows for plotting
+from scipy.io import wavfile          # data IO
 import os
-import cv2 as opencv
-from scipy.io import wavfile
+
+import config as CFG
 
 
-working_dir = 'numbers1/'
-save_dir = 'reduced_images/'
-count = 0
-path = os.getcwd()
+class DataGen:
 
-listings = os.listdir(working_dir)
-print(f'listing: {listings}')
+    def __init__(self):
+        self.working_dir = 'numbers1/'
+        self.orig_wavfiles = os.listdir(self.working_dir)
 
-#graph original file and trimmed file next to each other
-for file in listings:
+    def reduce_audio_images(self):
+        """
+        Converts audio samples into images and reduces them based on configuration values
+        """
+        for count, file in enumerate(self.orig_wavfiles):
 
-    audio_file = os.path.join(working_dir, file)
-    if os.path.isfile(audio_file):
+            audio_sample = os.path.join(self.working_dir, file)
 
-        print(f'IMAGE {count} (filename {audio_file}):')
-        # convert the wavfile into its frequency and array of channels
-        # int, numpy array consisting of # of channels and data per channel
-        amplitude, audio = wavfile.read(audio_file)
-        print(f'amplitude: {amplitude}')
-        print(f'audio (shape {audio}): {audio}')
+            if os.path.isfile(audio_sample):
 
-        time = np.arange(0, len(audio)) / amplitude
-        e_time = max(time, default=1)
+                # convert the wavfile into its amplitude and audio channels
+                amplitude, audio = wavfile.read(audio_sample)
+                time = np.arange(0, len(audio)) / amplitude
 
+                print(f'IMAGE {count} (filename {audio_sample})')
+                if CFG.TEST_CODE:
+                    print(f'amplitude: {amplitude}')
+                    print(f'audio (shape {audio}): {audio}')
 
-        # setup plot
-        fig, ax = plt.subplots(figsize=(.32, .32))
+                # setup plot with reduced dimensions
+                _, _ = plt.subplots(figsize=(CFG.REDUCE_DIM, CFG.REDUCE_DIM))
 
-        # plot original file
-        plt.plot(time, audio, 'blue', alpha=1, label='Original')
-        plt.ylim([-20000, 20000])
-        plt.xlim([0, 2])
+                # plot reduced image
+                plt.plot(time, audio, 'blue', alpha=1)
+                plt.ylim([-20000, 20000])
+                plt.xlim([0, 2])
+                plt.savefig(CFG.REDUCED_DIR + file[:-4] + 'r')
 
-        # commenting out labels for ridiculously tiny images
-        '''
-        plt.subplots_adjust(hspace=1)
-        plt.xlabel('Time (s)')
-        plt.ylabel('Sound Amplitude')
-        plt.title(f'Original - {e_time:.2f} seconds')
-        '''
-
-        plt.savefig(save_dir + file[:-4] + 'r')
-        # plt.show()
+                # uncomment to view all images
+                # plt.show()
