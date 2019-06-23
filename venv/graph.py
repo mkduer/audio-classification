@@ -1,9 +1,10 @@
 import numpy as np                    # linear algebra, vector operations, numpy arrays
 import matplotlib.pyplot as plt       # allows for plotting
 import seaborn as sns                 # accuracy line plot
-import config as CFG                  # program constants
 from os.path import exists            # check that path exists
 from os import mkdir, chdir           # directory operations
+
+import config as CFG                  # program constants
 
 
 class Graph:
@@ -70,11 +71,10 @@ class Graph:
         print(f'\nexperiment: {img_title}')
         return title, img_title
 
-    def plot_accuracy(self, annotate: bool=False):
+    def plot_accuracy(self):
         """
         Plot accuracy in each epoch
         :param legend_name: name equating to line in plot
-        :param annotate: if True, adds annotations, if False does not add annotations
         """
         plot_title, img_title = self.prep_titles("")
         test_legend = ['training data', 'test data']
@@ -92,7 +92,7 @@ class Graph:
         for line in range(2):
             ax = sns.lineplot(x=x, y=y[line], color=CFG.COLOR_ACCURACY[line], label=test_legend[line])
 
-        if annotate:
+        if CFG.ANNOTATE:
             ax.set(xlabel='Epochs',
                    ylabel='Accuracy (%)',
                    title=plot_title,
@@ -121,7 +121,9 @@ class Graph:
         ax.legend(loc='best')
 
         self.save_plot(img_title)
-        plt.show()
+
+        # uncomment to show the plots
+        # plt.show()
 
     def plot_cost(self, cost_tr_data: [[int]], cost_test_data: [[int]], title: str="Cost"):
         """

@@ -10,9 +10,11 @@ from keras.datasets import mnist
 from keras.preprocessing.image import ImageDataGenerator
 from keras.optimizers import adam
 
-import cv2
-from graph import Graph
 import config as CFG
+from datagen import DataGen
+from graph import Graph
+
+import cv2
 import numpy as np
 from contextlib import redirect_stdout
 import matplotlib.pyplot as plt
@@ -34,7 +36,7 @@ def keras_network(train_data, train_labels, test_data, test_labels, batch):
 
     # preprocess images: augment data
     if CFG.AUGMENT_IMAGES:
-        datagen = ImageDataGenerator(
+        data_generation = ImageDataGenerator(
             # Randomly apply the following parameters to the images
             width_shift_range=0.1,    # shift images horizontally
             height_shift_range=0.1,   # shift images vertically
@@ -43,7 +45,7 @@ def keras_network(train_data, train_labels, test_data, test_labels, batch):
             zoom_range=[0.95, 1.05],  # set a zoom range randomly applied to images
             horizontal_flip=True)     # flip images horizontally
 
-        datagen.fit(train_data)
+        data_generation.fit(train_data)
         steps_per_epoch = len(train_data) // batch
         print(f'steps_per_epoch = {steps_per_epoch}')
 
@@ -71,7 +73,7 @@ def keras_network(train_data, train_labels, test_data, test_labels, batch):
     classifier.add(Dense(output_dim=128, activation=CFG.ACTIVATE_FN[3]))
 
     # output layer
-    classifier.add(Dense(output_dim=CFG.OUTPUT_SIZE, activation=CFG.ACTIVATE_FN[4]))
+    classifier.add(Dense(output_dim=CFG.TOTAL_LABELS, activation=CFG.ACTIVATE_FN[4]))
 
     # compile model
     print(f'compile model')
@@ -84,7 +86,7 @@ def keras_network(train_data, train_labels, test_data, test_labels, batch):
         print(f'===================== EPOCH {e} =====================')
 
         if CFG.AUGMENT_IMAGES:
-            tr_results = classifier.fit_generator(datagen.flow(train_data, train_labels, batch_size=batch),
+            tr_results = classifier.fit_generator(data_generation.flow(train_data, train_labels, batch_size=batch),
                                                                epochs=1, steps_per_epoch=steps_per_epoch)
         else:
             tr_results = classifier.fit(train_data, train_labels, batch_size=batch, epochs=1)
@@ -140,10 +142,7 @@ def visualization(count, training_size, training_accuracy, training_cost, test_s
                            batch, "Accuracy Plot")
 
     # plot accuracy
-    if CFG.ANNOTATE:
-        graph.plot_accuracy(annotate=True)
-    else:
-        graph.plot_accuracy()
+    graph.plot_accuracy()
 
     # generate tabular data
     graph.tabular_data()
@@ -158,11 +157,20 @@ def load_data() -> ((), ()):
     :return: lists of training data and testing data
     """
 
+    # generate reduced images
+    if CFG.GENERATE_REDUCED_IMAGES:
+        datagen = DataGen()
+        datagen.reduce_audio_images()
 
-    (train_data, train_labels), (test_data, test_labels) = mnist.load_data()
-
-
-
+    if CFG.MNIST_DATA:
+        # use MNIST data
+        # test data shape: (10000, 28, 28), labels: (10000, )
+        # train data shape: (60000, 28, 28), labels: (60000, )
+        # e.g. single data sample: (1, 28, 28), label: (1, )
+        (train_data, train_labels), (test_data, test_labels) = mnist.load_data()
+    else:
+        # use custom data
+        (train_data, train_labels), (test_data, test_labels) = custom_load()
 
     train_data = train_data.astype('float32') / 255
     test_data = test_data.astype('float32') / 255
@@ -176,6 +184,20 @@ def load_data() -> ((), ()):
     test_labels = to_categorical(test_labels, total_classes)
 
     return (training_data, training_labels), (testing_data, test_labels)
+
+
+def custom_load() -> ((), ()):
+    """
+    Manually loads custom data and preprocesses the data into training data and
+    testing data
+    :return: lists of training data and testing data
+    """
+    print(f'TODO: NEED TO LOAD DATA')
+    training_data = np.ones((60000, 784))
+    training_labels =  np.ones((1, 784))
+    test_data = np.ones((60000, 784))
+    test_labels = np.ones((1, 784))
+    return (training_data, training_labels), (test_data, test_labels)
 
 
 def main():
