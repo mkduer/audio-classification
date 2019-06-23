@@ -123,7 +123,7 @@ class Graph:
         self.save_plot(img_title)
 
         # uncomment to show the plots
-        # plt.show()
+        plt.show()
 
     def plot_cost(self, cost_tr_data: [[int]], cost_test_data: [[int]], title: str="Cost"):
         """

@@ -15,9 +15,12 @@ from datagen import DataGen
 from graph import Graph
 
 import cv2
+import os
 import numpy as np
 from contextlib import redirect_stdout
 import matplotlib.pyplot as plt
+import pandas as pd
+from math import ceil
 
 
 def keras_network(train_data, train_labels, test_data, test_labels, batch):
@@ -61,19 +64,17 @@ def keras_network(train_data, train_labels, test_data, test_labels, batch):
         classifier.add(Dropout(0.2))
 
     # added layer
+    '''
     classifier.add(Convolution2D(64, (3, 3), activation=CFG.ACTIVATE_FN[1]))
     classifier.add(MaxPooling2D(pool_size=(2, 2)))
-
-    # added layer
-    classifier.add(Convolution2D(128, (3, 3), activation=CFG.ACTIVATE_FN[2]))
-    classifier.add(MaxPooling2D(pool_size=(2, 2)))
+    '''
 
     # layer
     classifier.add(Flatten())
-    classifier.add(Dense(output_dim=128, activation=CFG.ACTIVATE_FN[3]))
+    classifier.add(Dense(output_dim=128, activation=CFG.ACTIVATE_FN[1]))
 
     # output layer
-    classifier.add(Dense(output_dim=CFG.TOTAL_LABELS, activation=CFG.ACTIVATE_FN[4]))
+    classifier.add(Dense(output_dim=CFG.TOTAL_LABELS, activation=CFG.ACTIVATE_FN[2]))
 
     # compile model
     print(f'compile model')
@@ -172,6 +173,10 @@ def load_data() -> ((), ()):
         # use custom data
         (train_data, train_labels), (test_data, test_labels) = custom_load()
 
+    print(f'training_data: {train_data}')
+    print(f'training_labels: {train_labels}')
+    print(f'test data: {test_data}')
+    print(f'test labels: {test_labels}')
     train_data = train_data.astype('float32') / 255
     test_data = test_data.astype('float32') / 255
 
@@ -192,12 +197,58 @@ def custom_load() -> ((), ()):
     testing data
     :return: lists of training data and testing data
     """
-    print(f'TODO: NEED TO LOAD DATA')
-    training_data = np.ones((60000, 784))
-    training_labels =  np.ones((1, 784))
-    test_data = np.ones((60000, 784))
-    test_labels = np.ones((1, 784))
-    return (training_data, training_labels), (test_data, test_labels)
+    images = os.listdir(CFG.REDUCED_DIR)
+    image_rgb = []
+    image_labels = []
+
+    for count, img in enumerate(images):
+
+        img_sample = os.path.join(CFG.REDUCED_DIR, img)
+
+        if os.path.isfile(img_sample):
+            rgb_img = cv2.imread(img_sample, cv2.IMREAD_COLOR).reshape(1, 2352)
+            image_labels.append(label(img))
+            image_rgb.append(rgb_img)
+
+    rows = len(image_rgb)
+    total_images = np.asarray(image_rgb).reshape((rows, 2352))
+    total_labels = np.asarray(image_labels).reshape((rows, 1))
+
+    # create full dataframe with labels
+    data = np.concatenate((total_images, total_labels), axis=1)
+    total_data, total_features = data.shape
+    print(f'total data {total_data}, total features: {total_features}')
+
+    # further randomize data
+    np.random.shuffle(data)
+
+    # split into training data and testing data
+    split = 0
+    if CFG.TRAIN_PERCENT != 0:
+        split = ceil(total_data * CFG.TRAIN_PERCENT)
+        if ceil == total_data:
+            split = 0
+
+    if split != 0:
+        training_data = data[:split]
+        test_data = data[split:]
+
+    # TODO: handle if split = 0
+
+    print(f'training_data: {training_data[:, :-1]}, training_labels {training_data[:, -1:].ravel()}')
+    return (training_data[:, :-1], training_data[:, -1:].ravel()), (test_data[:, :-1], test_data[:, -1:].ravel())
+
+
+def label(filename: str) -> int:
+    """
+    Processes a filename in order to return the sample's label as an integer
+    :param filename: filename of type string
+    :return: label (e.g. if the filename contains a sample of audio 4, a 4 would be returned)
+    """
+    str_label = filename[:2]
+    label = ord(str_label[1]) - 48
+    label += (ord(str_label[0]) - 48) * 10
+    return label
 
 
 def main():
@@ -216,11 +267,10 @@ def main():
 
     # Test print of results
     print(f'====================== RESULTS ======================')
-    print(f'\n\ntraining_accuracy: {training_accuracy}\n')
-    print(f'\ntraining_loss: {training_loss}\n')
-    print(f'\n\ntest_accuracy: {test_accuracy}\n')
-    print(f'\ntest_loss: {test_loss}\n')
-    print(f'=====================================================')
+    print(f'\ntraining_accuracy: {training_accuracy}\n')
+    print(f'training_loss: {training_loss}\n')
+    print(f'test_accuracy: {test_accuracy}\n')
+    print(f'test_loss: {test_loss}\n')
     print(f'=====================================================')
 
     training_accuracy = np.asarray(training_accuracy)
