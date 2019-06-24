@@ -120,7 +120,7 @@ class Graph:
                    ylabel='Accuracy (%)',
                    title=plot_title,
                    xlim=(1, CFG.EPOCHS),
-                   ylim=(0, 100))
+                   ylim=(0, 102))
 
         ax.legend(loc='best')
 
