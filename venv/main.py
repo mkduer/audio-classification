@@ -64,12 +64,6 @@ def keras_network(train_data, train_labels, test_data, test_labels, batch):
         classifier.add(Dropout(0.2))
 
     # added layer
-    '''
-    classifier.add(Convolution2D(64, (3, 3), activation=CFG.ACTIVATE_FN[1]))
-    classifier.add(MaxPooling2D(pool_size=(2, 2)))
-    '''
-
-    # added layer
     classifier.add(Convolution2D(128, (3, 3), activation=CFG.ACTIVATE_FN[1]))
     classifier.add(MaxPooling2D(pool_size=(2, 2)))
 
@@ -156,16 +150,16 @@ def visualization(count, training_size, training_accuracy, training_cost, test_s
     if CFG.PLOT_COST:
         graph.plot_cost(training_cost.ravel(), test_cost.ravel())
 
+
 def load_data() -> ((), ()):
     """
     Loads images of from defined dataset
     :return: lists of training data and testing data
     """
-
-    # generate reduced images
-    if CFG.GENERATE_REDUCED_IMAGES:
+    # generate images from wavfiles
+    if CFG.CONVERT_AUDIO:
         datagen = DataGen()
-        datagen.reduce_audio_images()
+        datagen.convert_audio_into_images()
 
     row = CFG.ROW
     col = CFG.COL
@@ -181,10 +175,10 @@ def load_data() -> ((), ()):
         # use custom data
         (train_data, train_labels), (test_data, test_labels), row, col, depth = custom_load()
 
-    print(f'training_data: {train_data}')
-    print(f'training_labels: {train_labels}')
-    print(f'test data: {test_data}')
-    print(f'test labels: {test_labels}')
+    print(f'\ntraining_data: \n{train_data}')
+    print(f'\ntraining_labels: \n{train_labels}')
+    print(f'\ntest data: \n{test_data}')
+    print(f'\ntest labels: \n{test_labels}\n')
     train_data = train_data.astype('float32') / 255
     test_data = test_data.astype('float32') / 255
 
@@ -205,17 +199,32 @@ def custom_load() -> ((), (), int, int, int):
     testing data
     :return: lists of training data and testing data, and original image row, column and depth
     """
-    images = os.listdir(CFG.REDUCED_DIR)
+    images = os.listdir(CFG.DATA_SOURCE)
     image_rgb = []
     image_labels = []
 
     for count, img in enumerate(images):
 
-        img_sample = os.path.join(CFG.REDUCED_DIR, img)
+        img_sample = os.path.join(CFG.DATA_SOURCE, img)
 
         if os.path.isfile(img_sample):
             rgb_img = cv2.imread(img_sample, cv2.IMREAD_COLOR)
+
+            if CFG.GENERATE_RESIZED_IMAGES:
+                # resource for resizing images with cv2 while maintaining aspect ratio
+                # https://www.tutorialkart.com/opencv/python/opencv-python-resize-image/
+                width = int(rgb_img.shape[1] * CFG.SCALE_PERCENT)
+                height = int(rgb_img.shape[0] * CFG.SCALE_PERCENT)
+                rgb_img = cv2.resize(rgb_img, (width, height), interpolation=cv2.INTER_AREA)
+
             row, col, depth = rgb_img.shape
+
+            # Save a sample resized image
+            if count == 0:
+                print(f'RESIZED IMAGE SHAPE:')
+                print(f'row: {row}, col: {col}, depth: {depth}')
+                cv2.imwrite('/image_data/resized_sample.png', rgb_img)
+
             array_size = row * col * depth
             rgb_img.reshape(1, array_size)
             image_labels.append(label(img))
@@ -228,7 +237,7 @@ def custom_load() -> ((), (), int, int, int):
     # create full dataframe with labels
     data = np.concatenate((total_images, total_labels), axis=1)
     total_data, total_features = data.shape
-    print(f'total data {total_data}, total features: {total_features}')
+    print(f'total data {total_data}, total features: {total_features}\n')
 
     # further randomize data
     np.random.shuffle(data)
@@ -246,8 +255,6 @@ def custom_load() -> ((), (), int, int, int):
 
     # TODO: handle if split = 0
 
-    print(f'row: {row}, col: {col}, depth: {depth}')
-    print(f'training_data: {training_data[:, :-1]}, training_labels {training_data[:, -1:].ravel()}')
     return (training_data[:, :-1], training_data[:, -1:].ravel()), \
            (test_data[:, :-1], test_data[:, -1:].ravel()), \
            row, col, depth
