@@ -45,8 +45,8 @@ def keras_network(train_data, train_labels, test_data, test_labels, batch):
             height_shift_range=0.1,   # shift images vertically
             shear_range=0.1,          # shear images
             fill_mode='nearest',      # set mode for filling points outside the input boundaries
-            zoom_range=[0.95, 1.05],  # set a zoom range randomly applied to images
-            horizontal_flip=True)     # flip images horizontally
+            zoom_range=[0.98, 1.02],  # set a zoom range randomly applied to images
+            horizontal_flip=False)     # flip images horizontally
 
         data_generation.fit(train_data)
         steps_per_epoch = len(train_data) // batch
@@ -223,7 +223,7 @@ def custom_load() -> ((), (), int, int, int):
             if count == 0:
                 print(f'RESIZED IMAGE SHAPE:')
                 print(f'row: {row}, col: {col}, depth: {depth}')
-                cv2.imwrite('/image_data/resized_sample.png', rgb_img)
+                cv2.imwrite('/resized_sample.png', rgb_img)
 
             array_size = row * col * depth
             rgb_img.reshape(1, array_size)

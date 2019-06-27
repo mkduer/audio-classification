@@ -32,12 +32,12 @@ CONVERT_AUDIO = False               # if True, convert provided wavfiles over to
 REDUCE_DIM = 2                      # figure size for audio-to-image data
 
 # NN Hyperparameters
-ETA = 0.001
+ETA = 0.0006
 BETA1 = 0.9
 BETA2 = 0.999
 DROPOUT = False
-DROP_VAL = 0.3
-BATCH_SIZE = 28
+DROP_VAL = 0.1
+BATCH_SIZE = 128
 ACTIVATE_FN = ["relu", "relu", "relu", "softmax"]
 
 # NN Image Specs
