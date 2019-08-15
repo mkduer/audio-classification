@@ -1,6 +1,8 @@
 """
-modified keras code from the following sources:
+modified keras code from the following source:
 https://medium.com/nybles/create-your-first-image-recognition-classifier-using-cnn-keras-and-tensorflow-backend-6eaab98d14dd
+
+All of the data generation, hyperparameter value/testing, data processing was created from scratch
 """
 from keras.models import Sequential
 from keras.layers import Convolution2D, Flatten, Dense, Dropout
@@ -89,6 +91,7 @@ def keras_network(train_data, train_labels, test_data, test_labels, batch):
                                                                epochs=1, steps_per_epoch=steps_per_epoch)
         else:
             tr_results = classifier.fit(train_data, train_labels, batch_size=batch, epochs=1)
+            print(f'TR results: {tr_results}')
 
         classifier.summary()
 
@@ -192,7 +195,6 @@ def load_data() -> ((), ()):
 
     return (training_data, training_labels), (testing_data, test_labels)
 
-
 def custom_load() -> ((), (), int, int, int):
     """
     Manually loads custom data and preprocesses the data into training data and
@@ -244,12 +246,22 @@ def custom_load() -> ((), (), int, int, int):
 
     # split into training data and testing data
     split = 0
+
     if CFG.TRAIN_PERCENT != 0:
         split = ceil(total_data * CFG.TRAIN_PERCENT)
         if ceil == total_data:
             split = 0
 
-    if split != 0:
+    # if using completely separate training data and test data
+    # and test data has no labels
+    if split == 1 and not CFG.SINGLE_SOURCE_DATA:
+        training_data = data
+
+        return (training_data[:, :-1], training_data[:, -1:].ravel()), \
+               (grab_test_data(), -1), row, col, depth
+
+    # if using single-source for both training data and test data
+    elif split != 0:
         training_data = data[:split]
         test_data = data[split:]
 
