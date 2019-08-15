@@ -1,6 +1,6 @@
 from os import getcwd
 
-TEST_CODE = False    # True if testing code, False if running neural network fully
+TEST_CODE = True    # True if testing code, False if running neural network fully
 
 if TEST_CODE:
     print(f'You are in CODE TESTING mode. To switch to regular program mode,\n'
@@ -9,7 +9,7 @@ if TEST_CODE:
     TRAIN_PERCENT = .90
 else:
     EPOCHS = 50
-    TRAIN_PERCENT = .80
+    TRAIN_PERCENT = 1
 
 # Directories and Files
 PATH = getcwd()
@@ -17,12 +17,14 @@ GRAPHS_DIR = PATH + '/accuracy_graphs/'  # directory for storing accuracy graphs
 REDUCED_DIR = PATH + '/reduced_images/'  # directory for storing reduced images
 
 # Image Sources and Processing Specs
+SINGLE_SOURCE_DATA = False
 TOMS_DATA = 'toms_graphs/'
 VIRA_ENV = 'envel08/'
 VIRA_SPECT = 'specs08/'
 NUM1 = 'numbers1'
 NUM2 = 'numbers2'
-DATA_SOURCE = PATH + '/image_data/' + VIRA_SPECT     # select directory for grabbing data from
+TEST_DATA = 'test_data'
+DATA_SOURCE = PATH + '/image_data/' + VIRA_SPECT     # select current data source
 GENERATE_RESIZED_IMAGES = True      # rescale the images
 SCALE_PERCENT = .6                  # scale image while maintaining aspect ratio
 
@@ -32,7 +34,7 @@ CONVERT_AUDIO = False               # if True, convert provided wavfiles over to
 REDUCE_DIM = 2                      # figure size for audio-to-image data
 
 # NN Hyperparameters
-ETA = 0.0006
+ETA = 0.0007
 BETA1 = 0.9
 BETA2 = 0.999
 DROPOUT = False
